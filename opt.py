@@ -34,8 +34,6 @@ def get_stock_data(tickers, start, end):
         st.error(f"Error fetching stock data: {e}")
         return None, None
 
-
-# 2. Calculate Expected Returns & Covariance Matrix
 def calculate_metrics(returns):
     if returns is None or returns.empty:
         st.error("Returns data is empty!")
@@ -56,25 +54,31 @@ def calculate_metrics(returns):
 
     return mu, sigma
 
-# 3. Portfolio Optimization with Error Handling
+
+
+# 2. Calculate Expected Returns & Covariance Matrix
 def optimize_portfolio(mu, sigma, prev_weights=None, risk_aversion=0.5, short_selling=False, transaction_cost=0.001):
     if mu is None or sigma is None:
         st.error("Expected returns (mu) or covariance matrix (sigma) is None!")
         return None
-
+    
     try:
         n = len(mu)
+
+        # Check that mu is a 1D array (vector) and sigma is a 2D square matrix
+        if len(mu.shape) != 1:
+            st.error("Expected returns (mu) should be a 1D array (vector).")
+            return None
+
+        if len(sigma.shape) != 2 or sigma.shape[0] != sigma.shape[1] or sigma.shape[0] != n:
+            st.error("Covariance matrix (sigma) should be a square matrix with shape (n, n).")
+            return None
         
         # Debugging print statements
         st.write(f"Optimization problem with {n} assets.")
         
         # Define portfolio weights variable
         w = cp.Variable(n)
-        
-        # Check that mu and sigma have the correct dimensions
-        if mu.shape[0] != n or sigma.shape[0] != n or sigma.shape[1] != n:
-            st.error("The shape of mu or sigma does not match the number of assets.")
-            return None
         
         # Define the objective function and constraints
         objective = cp.Maximize(mu.T @ w - risk_aversion * cp.quad_form(w, sigma))
