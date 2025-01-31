@@ -12,19 +12,19 @@ def get_stock_data(tickers, start, end):
         data = yf.download(tickers, start=start, end=end)
         
         # Check if 'Adj Close' column exists in the data
-        if 'Close' not in data.columns:
+        if 'previousClose' not in data.columns:
             st.error("'Close' column not found in the downloaded data.")
             return None, None
         
         # Extract adjusted close prices
-        data = data.Close
+        data = data.previousClose
         
         # Check if data is empty
         if data.empty:
             st.error("No data found for the given tickers and date range.")
             return None, None
         
-        returns = data['Close'].pct_change().dropna()
+        returns = data['previousClose'].pct_change().dropna()
         return data, returns
     
     except Exception as e:
