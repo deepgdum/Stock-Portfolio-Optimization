@@ -120,12 +120,14 @@ def calculate_sharpe_ratio(portfolio_returns, risk_free_rate=0.02):
 # 5. Trigger-Based Rebalancing with Safe Handling
 def trigger_rebalancing(tickers, start, end, initial_capital=100000, risk_aversion=0.5, transaction_cost=0.001, weight_deviation_threshold=0.05):
     data, returns = get_stock_data(tickers, start, end)
+    
     if data is None or returns is None:
-        return None, None, None, None, None  # Stop execution if no valid data
+        return None, None, None, None, None
     
     mu, sigma = calculate_metrics(returns)
+    
     if mu is None or sigma is None:
-        return None, None, None, None, None  # Stop execution if no valid metrics
+        return None, None, None, None, None
     
     dates = data.index
     portfolio_weights = {}
@@ -134,8 +136,16 @@ def trigger_rebalancing(tickers, start, end, initial_capital=100000, risk_aversi
     capital = initial_capital
     transaction_costs = []
     rebalance_dates = []
-    
+
+    # **PRINT AVAILABLE DATES FOR DEBUGGING**
+    st.write(f"Available dates in returns: {returns.index.tolist()[:5]} ... {returns.index.tolist()[-5:]}")
+
     for date in dates:
+        # **CHECK IF DATE EXISTS IN RETURNS TO AVOID KeyError**
+        if date not in returns.index:
+            st.warning(f"Skipping {date}: No data available.")
+            continue  # Skip this iteration
+        
         if prev_weights is None:
             opt_weights = optimize_portfolio(mu, sigma, prev_weights, risk_aversion, transaction_cost=transaction_cost)
             if opt_weights is None:
@@ -144,9 +154,6 @@ def trigger_rebalancing(tickers, start, end, initial_capital=100000, risk_aversi
             prev_weights = opt_weights
             rebalance_dates.append(date)
         else:
-            if date not in returns.index:
-                continue
-            
             current_weights = prev_weights * (1 + returns.loc[date])
             current_weights /= np.sum(current_weights)
             
@@ -164,17 +171,18 @@ def trigger_rebalancing(tickers, start, end, initial_capital=100000, risk_aversi
         
         capital *= (1 + np.dot(prev_weights, returns.loc[date]))
         portfolio_values.append(capital)
-        
+
         if len(rebalance_dates) > 1 and date == rebalance_dates[-1]:
             trade_cost = np.sum(np.abs(portfolio_weights[date] - portfolio_weights[rebalance_dates[-2]])) * transaction_cost
             transaction_costs.append(trade_cost)
         else:
             transaction_costs.append(0)
-    
+
     portfolio_returns = pd.Series(portfolio_values).pct_change().dropna()
     sharpe_ratio = calculate_sharpe_ratio(portfolio_returns)
     
     return portfolio_weights, portfolio_values, transaction_costs, sharpe_ratio, rebalance_dates
+
 
 # 6. Visualization Dashboard with None Checks
 def portfolio_dashboard(portfolio_values, dates, transaction_costs, sharpe_ratio, rebalance_dates):
