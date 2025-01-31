@@ -192,4 +192,32 @@ def portfolio_dashboard(portfolio_values, dates, transaction_costs, sharpe_ratio
     # Rebalancing Events Chart
     df_rebalance = pd.DataFrame({"Date": rebalance_dates, "Event": ["Rebalance"] * len(rebalance_dates)})
     fig3 = px.scatter(df_rebalance, x="Date", y=[0] * len(rebalance_dates), title="Rebalancing Events", labels={"Date": "Rebalance Date"})
-    fig3.update_layout(showlegend=False,
+    fig3.update_layout(showlegend=False,xaxis_title="Date", yaxis_title="Event", template="plotly_dark")
+    st.plotly_chart(fig3)
+    
+    # Sharpe Ratio
+    if sharpe_ratio is not None:
+        st.metric("📊 Sharpe Ratio", f"{sharpe_ratio:.2f}")
+    else:
+        st.error("Unable to calculate Sharpe Ratio.")
+# 7. Main Function with Safe Execution
+def main():
+    st.sidebar.title("Portfolio Optimization Parameters")
+    tickers = st.sidebar.text_input("Enter Tickers (comma-separated)", "AAPL,MSFT,GOOGL,TSLA,AMZN").split(',')
+    start_date = st.sidebar.date_input("Start Date", datetime.now() - timedelta(days=365))
+    end_date = st.sidebar.date_input("End Date", datetime.now())
+    risk_aversion = st.sidebar.slider("Risk Aversion", 0.0, 1.0, 0.5, 0.01)
+    
+    st.sidebar.info("🔧 Adjust settings and press 'Run Optimization' to trigger portfolio analysis.")
+    
+    if st.sidebar.button("Run Optimization"):
+        portfolio, portfolio_values, transaction_costs, sharpe_ratio, rebalance_dates = trigger_rebalancing(
+            tickers, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'), risk_aversion=risk_aversion
+        )
+        
+        if portfolio_values:
+            dates = pd.date_range(start_date, end_date, freq='D')[:len(portfolio_values)]
+            portfolio_dashboard(portfolio_values, dates, transaction_costs, sharpe_ratio, rebalance_dates)
+
+if __name__ == "__main__":
+    main()
