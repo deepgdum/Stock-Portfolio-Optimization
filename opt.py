@@ -15,12 +15,12 @@ def get_stock_data(tickers, start, end):
         data = yf.download(tickers, start=start, end=end)
         
         # Check if 'Adj Close' column exists in the data
-        if 'Adj Close' not in data.columns:
-            st.error("'Adj Close' column not found in the downloaded data.")
+        if 'Close' not in data.columns:
+            st.error("'Close' column not found in the downloaded data.")
             return None, None
         
         # Extract adjusted close prices
-        data = data['Adj Close']
+        data = data['Close']
         
         # Check if data is empty
         if data.empty:
@@ -70,7 +70,7 @@ def optimize_portfolio(mu, sigma, prev_weights=None, risk_aversion=0.5, short_se
         st.error(f"Optimization error: {e}")
         return None
 
-# 4. Risk-Adjusted Metrics (Sharpe Ratio)
+# 4. Risk-usted Metrics (Sharpe Ratio)
 def calculate_sharpe_ratio(portfolio_returns, risk_free_rate=0.02):
     if portfolio_returns is None or portfolio_returns.empty:
         return None
