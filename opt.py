@@ -38,37 +38,69 @@ def get_stock_data(tickers, start, end):
 # 2. Calculate Expected Returns & Covariance Matrix
 def calculate_metrics(returns):
     if returns is None or returns.empty:
+        st.error("Returns data is empty!")
         return None, None
+    
+    # Calculate expected returns and covariance matrix
     mu = returns.mean()  # Expected returns
     sigma = returns.cov()  # Covariance matrix
+    
+    # Debugging print statements
+    st.write(f"Expected returns (mu): {mu}")
+    st.write(f"Covariance matrix (sigma): {sigma}")
+    
+    # Check if mu and sigma are valid
+    if mu.isnull().any() or sigma.isnull().any().any():
+        st.error("There are NaN values in the expected returns or covariance matrix!")
+        return None, None
+
     return mu, sigma
 
 # 3. Portfolio Optimization with Error Handling
 def optimize_portfolio(mu, sigma, prev_weights=None, risk_aversion=0.5, short_selling=False, transaction_cost=0.001):
     if mu is None or sigma is None:
+        st.error("Expected returns (mu) or covariance matrix (sigma) is None!")
         return None
+
     try:
         n = len(mu)
+        
+        # Debugging print statements
+        st.write(f"Optimization problem with {n} assets.")
+        
+        # Define portfolio weights variable
         w = cp.Variable(n)
+        
+        # Check that mu and sigma have the correct dimensions
+        if mu.shape[0] != n or sigma.shape[0] != n or sigma.shape[1] != n:
+            st.error("The shape of mu or sigma does not match the number of assets.")
+            return None
+        
+        # Define the objective function and constraints
         objective = cp.Maximize(mu.T @ w - risk_aversion * cp.quad_form(w, sigma))
         constraints = [cp.sum(w) == 1]
+        
         if not short_selling:
             constraints.append(w >= 0)
         
         if prev_weights is not None:
             trade_cost = cp.norm(w - prev_weights, 1) * transaction_cost
-            objective -= trade_cost 
+            objective -= trade_cost
         
+        # Define and solve the problem
         problem = cp.Problem(objective, constraints)
         problem.solve()
-        
+
         if w.value is None:
             st.error("Optimization failed. Check input parameters.")
             return None
+        
         return w.value
+
     except Exception as e:
         st.error(f"Optimization error: {e}")
         return None
+
 
 # 4. Risk-usted Metrics (Sharpe Ratio)
 def calculate_sharpe_ratio(portfolio_returns, risk_free_rate=0.02):
