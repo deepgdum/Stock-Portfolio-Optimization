@@ -8,26 +8,19 @@ from datetime import datetime, timedelta
 
 # 1. Fetch Real-Time Stock Data with Error Handling
 def get_stock_data(tickers, start, end):
+    def get_stock_data(tickers, start, end):
     
         data = yf.download(tickers, start=start, end=end)
         
         # Check if 'Adj Close' column exists in the data
         if 'Open' in data.columns:
             data = data['Open']
-        else:
-            st.error("'Open' column not found in the downloaded data.")
-            return None, None
         
         
-        # Check if data is empty
-        if data.empty:
-            st.error("No data found for the given tickers and date range.")
-            return None, None
-        
-
-
-returns = data['Open'].pct_change().dropna()
-print(returns)
+        returns = data.pct_change().dropna()
+        return data, returns
+    
+      
     
     
 
