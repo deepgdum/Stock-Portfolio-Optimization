@@ -8,20 +8,25 @@ from datetime import datetime, timedelta
 
 # 1. Fetch Real-Time Stock Data with Error Handling
 def get_stock_data(tickers, start, end):
-    def get_stock_data(tickers, start, end):
+    data = yf.download(tickers, start=start, end=end)
     
-        data = yf.download(tickers, start=start, end=end)
-        
-        # Check if 'Adj Close' column exists in the data
-        if 'Open' in data.columns:
-            data = data['Open']
-        
-        
-        returns = data.pct_change().dropna()
-        return data, returns
+    if data.empty:
+        st.error("Error: No stock data found. Check the ticker symbols or date range.")
+        return None, None  # Return None early to prevent further errors
     
-      
+    if 'Open' in data.columns:
+        data = data['Open']
+    else:
+        st.error("Error: 'Open' column not found in the data.")
+        return None, None
     
+    returns = data.pct_change().dropna()
+    
+    if returns.empty:
+        st.error("Error: Unable to calculate returns. Data might be insufficient.")
+        return None, None
+    
+    return data, returns
     
 
 # 2. Calculate Expected Returns & Covariance Matrix
@@ -107,11 +112,11 @@ def calculate_sharpe_ratio(portfolio_returns, risk_free_rate=0.02):
 def trigger_rebalancing(tickers, start, end, initial_capital=100000, risk_aversion=0.5, transaction_cost=0.001, weight_deviation_threshold=0.05):
     data, returns = get_stock_data(tickers, start, end)
     if data is None or returns is None:
-        return None, None, None, None, None
+        return None, None, None, None, None  # Stop execution if no valid data
     
     mu, sigma = calculate_metrics(returns)
     if mu is None or sigma is None:
-        return None, None, None, None, None
+        return None, None, None, None, None  # Stop execution if no valid metrics
     
     dates = data.index
     portfolio_weights = {}
@@ -204,13 +209,23 @@ def main():
     st.sidebar.info("🔧 Adjust settings and press 'Run Optimization' to trigger portfolio analysis.")
     
     if st.sidebar.button("Run Optimization"):
-        portfolio, portfolio_values, transaction_costs, sharpe_ratio, rebalance_dates = trigger_rebalancing(
+        # 🛑 Call trigger_rebalancing() and check if the result is valid before unpacking
+        result = trigger_rebalancing(
             tickers, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'), risk_aversion=risk_aversion
         )
+
+        # 🔴 Prevent unpacking None values, show error instead
+        if result is None or any(x is None for x in result):
+            st.error("⚠️ Error: Portfolio optimization failed due to missing data or calculation issues.")
+            return  # Stop execution
+
+        # ✅ Safe unpacking now that we know result is valid
+        portfolio, portfolio_values, transaction_costs, sharpe_ratio, rebalance_dates = result
         
         if portfolio_values:
             dates = pd.date_range(start_date, end_date, freq='D')[:len(portfolio_values)]
             portfolio_dashboard(portfolio_values, dates, transaction_costs, sharpe_ratio, rebalance_dates)
+
 
 if __name__ == "__main__":
     main()
