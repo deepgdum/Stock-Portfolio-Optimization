@@ -27,7 +27,7 @@ def get_stock_data(tickers, start, end):
 
 
 returns = data['Open'].pct_change().dropna()
-return data, returns
+print(returns)
     
     
 
