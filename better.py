@@ -17,14 +17,14 @@ def get_stock_data(tickers, start, end):
             return None, None
         
         # Extract adjusted close prices
-        data = data['Close']
+        data = data.Close
         
         # Check if data is empty
         if data.empty:
             st.error("No data found for the given tickers and date range.")
             return None, None
         
-        returns = data.pct_change().dropna()
+        returns = data['Close'].pct_change().dropna()
         return data, returns
     
     except Exception as e:
@@ -63,11 +63,11 @@ def optimize_portfolio(mu, sigma, prev_weights=None, risk_aversion=0.5, short_se
 
         # Check that mu is a 1D array (vector) and sigma is a 2D square matrix
         if len(mu.shape) != 1:
-            st.error("Expected returns (mu) should be a 1D array (vector).")
+            st.error(f"Expected returns (mu) should be a 1D array, but got shape {mu.shape}.")
             return None
 
         if len(sigma.shape) != 2 or sigma.shape[0] != sigma.shape[1] or sigma.shape[0] != n:
-            st.error("Covariance matrix (sigma) should be a square matrix with shape (n, n).")
+            st.error(f"Covariance matrix (sigma) should be square with shape (n, n), but got shape {sigma.shape}.")
             return None
         
         # Debugging print statements
@@ -91,10 +91,12 @@ def optimize_portfolio(mu, sigma, prev_weights=None, risk_aversion=0.5, short_se
         problem = cp.Problem(objective, constraints)
         problem.solve()
 
+        # Debugging: check the value of w
         if w.value is None:
-            st.error("Optimization failed. Check input parameters.")
+            st.error(f"Optimization failed. The value of portfolio weights (w) is None.")
             return None
-        
+
+        st.write(f"Optimal portfolio weights: {w.value}")
         return w.value
 
     except Exception as e:
@@ -190,33 +192,4 @@ def portfolio_dashboard(portfolio_values, dates, transaction_costs, sharpe_ratio
     # Rebalancing Events Chart
     df_rebalance = pd.DataFrame({"Date": rebalance_dates, "Event": ["Rebalance"] * len(rebalance_dates)})
     fig3 = px.scatter(df_rebalance, x="Date", y=[0] * len(rebalance_dates), title="Rebalancing Events", labels={"Date": "Rebalance Date"})
-    fig3.update_layout(showlegend=False, xaxis_title="Date", yaxis_title="Event", template="plotly_dark")
-    st.plotly_chart(fig3)
-    
-    # Sharpe Ratio
-    if sharpe_ratio is not None:
-        st.metric("📊 Sharpe Ratio", f"{sharpe_ratio:.2f}")
-    else:
-        st.error("Unable to calculate Sharpe Ratio.")
-
-# 7. Main Function with Safe Execution
-def main():
-    st.sidebar.title("Portfolio Optimization Parameters")
-    tickers = st.sidebar.text_input("Enter Tickers (comma-separated)", "AAPL,MSFT,GOOGL,TSLA,AMZN").split(',')
-    start_date = st.sidebar.date_input("Start Date", datetime.now() - timedelta(days=365))
-    end_date = st.sidebar.date_input("End Date", datetime.now())
-    risk_aversion = st.sidebar.slider("Risk Aversion", 0.0, 1.0, 0.5, 0.01)
-    
-    st.sidebar.info("🔧 Adjust settings and press 'Run Optimization' to trigger portfolio analysis.")
-    
-    if st.sidebar.button("Run Optimization"):
-        portfolio, portfolio_values, transaction_costs, sharpe_ratio, rebalance_dates = trigger_rebalancing(
-            tickers, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'), risk_aversion=risk_aversion
-        )
-        
-        if portfolio_values:
-            dates = pd.date_range(start_date, end_date, freq='D')[:len(portfolio_values)]
-            portfolio_dashboard(portfolio_values, dates, transaction_costs, sharpe_ratio, rebalance_dates)
-
-if __name__ == "__main__":
-    main()
+    fig3.update_layout(showlegend=False,
