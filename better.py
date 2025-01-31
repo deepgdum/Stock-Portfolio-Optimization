@@ -8,14 +8,14 @@ from datetime import datetime, timedelta
 
 # 1. Fetch Real-Time Stock Data with Error Handling
 def get_stock_data(tickers, start, end):
-    try:
+    
         data = yf.download(tickers, start=start, end=end)
         
         # Check if 'Adj Close' column exists in the data
-        if 'open' not in data.columns:
-            data = data.open
+        if 'Open' in data.columns:
+            data = data['Open']
         else:
-            st.error("'open' column not found in the downloaded data.")
+            st.error("'Open' column not found in the downloaded data.")
             return None, None
         
         
@@ -24,12 +24,12 @@ def get_stock_data(tickers, start, end):
             st.error("No data found for the given tickers and date range.")
             return None, None
         
-        returns = data['open'].pct_change().dropna()
+
+
+returns = data['Open'].pct_change().dropna()
         return data, returns
     
-    except Exception as e:
-        st.error(f"Error fetching stock data: {e}")
-        return None, None
+    
 
 # 2. Calculate Expected Returns & Covariance Matrix
 def calculate_metrics(returns):
