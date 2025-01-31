@@ -35,9 +35,15 @@ def calculate_metrics(returns):
         st.error("Returns data is empty!")
         return None, None
     
-    # Calculate expected returns and covariance matrix
-    mu = returns.mean()  # Expected returns
-    sigma = returns.cov()  # Covariance matrix
+    mu = returns.mean().values  # Ensure 1D array
+    sigma = returns.cov().values  # Ensure 2D matrix
+    
+    if mu is None or sigma is None or mu.shape[0] == 0 or sigma.shape[0] != sigma.shape[1]:
+        st.error("Error: Invalid expected returns or covariance matrix!")
+        return None, None
+    
+    return mu, sigma
+
     
     # Debugging print statements
     st.write(f"Expected returns (mu): {mu}")
@@ -55,6 +61,9 @@ def optimize_portfolio(mu, sigma, prev_weights=None, risk_aversion=0.5, short_se
     if mu is None or sigma is None:
         st.error("Expected returns (mu) or covariance matrix (sigma) is None!")
         return None
+    st.write(f"mu type: {type(mu)}, shape: {mu.shape if hasattr(mu, 'shape') else 'N/A'}")
+    st.write(f"sigma type: {type(sigma)}, shape: {sigma.shape if hasattr(sigma, 'shape') else 'N/A'}")
+
     
     try:
         n = len(mu)
