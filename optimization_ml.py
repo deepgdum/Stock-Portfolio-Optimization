@@ -558,7 +558,39 @@ def get_stock_data(tickers, start_date, end_date):
     except Exception as e:
         st.error(f"Error fetching stock data: {str(e)}")
         return None, None
+
+def calculate_metrics(returns):
+    """
+    Calculate expected returns and covariance matrix from historical returns.
+    
+    Parameters:
+    -----------
+    returns : pd.DataFrame
+        Daily returns for each asset (columns are tickers)
+    
+    Returns:
+    --------
+    tuple
+        (mu, sigma) where mu is the expected returns (annualized, pd.Series)
+        and sigma is the covariance matrix (annualized, pd.DataFrame)
+    """
+    try:
+        if returns.empty or returns.isna().all().all():
+            st.error("Returns data is empty or contains only NaN values.")
+            return None, None
         
+        # Calculate expected returns (mean daily returns, annualized)
+        mu = returns.mean() * 252
+        
+        # Calculate covariance matrix (annualized)
+        sigma = returns.cov() * np.sqrt(252)
+        
+        return mu, sigma
+    
+    except Exception as e:
+        st.error(f"Error calculating metrics: {str(e)}")
+        return None, None
+
 # Update the main function to include ML options
 def main_with_ml():
     from datetime import datetime, timedelta  # Move import here
