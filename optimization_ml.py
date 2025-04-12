@@ -517,7 +517,48 @@ def optimize_portfolio_with_ml(mu, sigma, prev_weights=None, risk_aversion=0.5,
         st.error(f"Optimization error: {str(e)}")
         return None
 
-
+def get_stock_data(tickers, start_date, end_date):
+    """
+    Fetch historical stock data for given tickers and date range.
+    
+    Parameters:
+    -----------
+    tickers : list
+        List of ticker symbols
+    start_date : str
+        Start date in 'YYYY-MM-DD' format
+    end_date : str
+        End date in 'YYYY-MM-DD' format
+    
+    Returns:
+    --------
+    tuple
+        (prices, returns) where prices is a DataFrame of closing prices and
+        returns is a DataFrame of daily returns
+    """
+    try:
+        # Fetch data using yfinance
+        data = yf.download(tickers, start=start_date, end=end_date, progress=False)
+        
+        if data.empty:
+            st.error(f"No data retrieved for tickers {tickers} from {start_date} to {end_date}.")
+            return None, None
+        
+        # Handle single ticker vs. multiple tickers
+        if len(tickers) == 1:
+            prices = data['Close'].to_frame(name=tickers[0])
+        else:
+            prices = data['Close']
+        
+        # Calculate daily returns
+        returns = prices.pct_change().dropna()
+        
+        return prices, returns
+    
+    except Exception as e:
+        st.error(f"Error fetching stock data: {str(e)}")
+        return None, None
+        
 # Update the main function to include ML options
 def main_with_ml():
     from datetime import datetime, timedelta  # Move import here
