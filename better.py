@@ -288,9 +288,9 @@ def portfolio_dashboard(portfolio_data):
             x="Date", 
             y="Portfolio Value",
             title="Portfolio Value Over Time",
-            labels={"Portfolio Value": "Value ($)"}
+            labels={"Portfolio Value": "Value (₹)"}
         )
-        fig1.update_layout(xaxis_title="Date", yaxis_title="Portfolio Value ($)")
+        fig1.update_layout(xaxis_title="Date", yaxis_title="Portfolio Value (₹)")
         st.plotly_chart(fig1, use_container_width=True)
         
         # Calculate and display returns
@@ -312,9 +312,9 @@ def portfolio_dashboard(portfolio_data):
             x="Date", 
             y="Transaction Cost",
             title="Transaction Costs",
-            labels={"Transaction Cost": "Cost ($)"}
+            labels={"Transaction Cost": "Cost (₹)"}
         )
-        fig2.update_layout(xaxis_title="Date", yaxis_title="Transaction Cost ($)")
+        fig2.update_layout(xaxis_title="Date", yaxis_title="Transaction Cost (₹)")
         st.plotly_chart(fig2, use_container_width=True)
         
         # Rebalancing events chart
@@ -343,7 +343,7 @@ def portfolio_dashboard(portfolio_data):
             )
             fig3.update_layout(
                 xaxis_title="Date", 
-                yaxis_title="Portfolio Value at Rebalancing ($)",
+                yaxis_title="Portfolio Value at Rebalancing (₹)",
                 showlegend=False
             )
             
@@ -361,7 +361,7 @@ def portfolio_dashboard(portfolio_data):
             # Rebalancing statistics
             st.metric("Number of Rebalances", len(portfolio_data['rebalance_dates']))
             total_transaction_cost = sum(portfolio_data['transaction_costs'])
-            st.metric("Total Transaction Costs", f"${total_transaction_cost:.2f}")
+            st.metric("Total Transaction Costs", f"₹{total_transaction_cost:.2f}")
     
     with tab3:
         st.subheader("Portfolio Weights Over Time")
@@ -510,7 +510,7 @@ def main():
     ) / 100  # Convert percentage to decimal
     
     initial_capital = st.sidebar.number_input(
-        "Initial Capital ($)",
+        "Initial Capital (₹)",
         min_value=1000,
         max_value=10000000,
         value=100000,
