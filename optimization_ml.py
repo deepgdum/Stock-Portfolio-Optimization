@@ -566,7 +566,7 @@ def main_with_ml():
                 value=datetime.datetime.now(),
                 min_value=start_date + datetime.timedelta(days=30),
                 max_value=datetime.datetime.now()
-        
+            )
         if start_date >= end_date:
             st.sidebar.error("End date must be after start date.")
             return
