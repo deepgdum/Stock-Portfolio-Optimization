@@ -553,21 +553,22 @@ def main_with_ml():
         
         # Date range selection with validation
         col1, col2 = st.sidebar.columns(2)
-with col1:
-    start_date = st.date_input(
-        "Start Date",
-        value=(datetime.datetime.now() - datetime.timedelta(days=365*2)),  # Use datetime.datetime
-        max_value=datetime.datetime.now() - datetime.timedelta(days=30)
-    )
-
-with col2:
-    end_date = st.date_input(
-        "End Date",
-        value=datetime.datetime.now(),
-        min_value=start_date + datetime.timedelta(days=30),
-        max_value=datetime.datetime.now()
-    )
-    if start_date >= end_date:
+        with col1:
+            start_date = st.date_input(
+                "Start Date",
+                value=(datetime.datetime.now() - datetime.timedelta(days=365*2)),
+                max_value=datetime.datetime.now() - datetime.timedelta(days=30)
+            )
+        
+        with col2:
+            end_date = st.date_input(
+                "End Date",
+                value=datetime.datetime.now(),
+                min_value=start_date + datetime.timedelta(days=30),
+                max_value=datetime.datetime.now()
+            )
+        
+        if start_date >= end_date:
             st.sidebar.error("End date must be after start date.")
             return
         
@@ -665,8 +666,8 @@ with col2:
             predictor = None
             if use_ml:
                 ml_results = get_ml_predicted_returns(
-                    tickers, 
-                    start_str, 
+                    tickers,
+                    start_str,
                     end_str,
                     prediction_horizon=prediction_horizon,
                     model_type=ml_model_type
@@ -678,8 +679,8 @@ with col2:
             # Run the portfolio optimization with ML integration
             with st.spinner("Optimizing portfolio..."):
                 optimal_weights = optimize_portfolio_with_ml(
-                    mu, 
-                    sigma, 
+                    mu,
+                    sigma,
                     None,  # No previous weights for initial allocation
                     risk_aversion=risk_aversion,
                     transaction_cost=transaction_cost,
@@ -704,8 +705,8 @@ with col2:
                 # Create a pie chart of the allocations
                 import plotly.express as px
                 fig = px.pie(
-                    weights_df, 
-                    values='Allocation', 
+                    weights_df,
+                    values='Allocation',
                     names='Asset',
                     title="Portfolio Allocation"
                 )
@@ -745,7 +746,6 @@ with col2:
                         - {ml_confidence*100:.0f}% weight on ML-predicted returns
                     """)
     
-    # ML Model Analysis Tab
     with tab2:
         st.title("🧠 ML Model Analysis")
         
@@ -754,7 +754,7 @@ with col2:
             st.subheader("Feature Importance Analysis")
             
             selected_ticker = st.selectbox(
-                "Select Asset for Detailed Analysis", 
+                "Select Asset for Detailed Analysis",
                 tickers,
                 key="ml_analysis_ticker"
             )
@@ -817,28 +817,28 @@ with col2:
             
             # Explanation of the ML approach
             st.markdown("""
-            ### Machine Learning Approach for Return Prediction
-            
-            The ML-enhanced portfolio optimization uses advanced machine learning techniques to predict future asset returns:
-            
-            **Feature Engineering:**
-            - Price trends and momentum indicators
-            - Moving averages over multiple time periods
-            - Volatility measures
-            - Technical indicators like RSI
-            
-            **Model Options:**
-            - **Random Forest**: Ensemble method using multiple decision trees
-            - **Gradient Boosting**: Sequential ensemble method focusing on errors of previous models
-            - **Elastic Net**: Linear regression with L1 and L2 regularization
-            
-            **Integration with Portfolio Optimization:**
-            The ML predictions are blended with historical return estimates based on a confidence parameter, allowing you to control how much weight is given to the predictive models.
-            
-            **Benefits:**
-            - More forward-looking than traditional mean-variance optimization
-            - Adaptive to changing market conditions
-            - Can capture complex non-linear patterns in asset returns
+                ### Machine Learning Approach for Return Prediction
+                
+                The ML-enhanced portfolio optimization uses advanced machine learning techniques to predict future asset returns:
+                
+                **Feature Engineering:**
+                - Price trends and momentum indicators
+                - Moving averages over multiple time periods
+                - Volatility measures
+                - Technical indicators like RSI
+                
+                **Model Options:**
+                - **Random Forest**: Ensemble method using multiple decision trees
+                - **Gradient Boosting**: Sequential ensemble method focusing on errors of previous models
+                - **Elastic Net**: Linear regression with L1 and L2 regularization
+                
+                **Integration with Portfolio Optimization:**
+                The ML predictions are blended with historical return estimates based on a confidence parameter, allowing you to control how much weight is given to the predictive models.
+                
+                **Benefits:**
+                - More forward-looking than traditional mean-variance optimization
+                - Adaptive to changing market conditions
+                - Can capture complex non-linear patterns in asset returns
             """)
 
 if __name__ == "__main__":
