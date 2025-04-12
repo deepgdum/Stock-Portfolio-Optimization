@@ -553,20 +553,20 @@ def main_with_ml():
         
         # Date range selection with validation
         col1, col2 = st.sidebar.columns(2)
-        with col1:
-            start_date = st.date_input(
-                "Start Date",
-                value=(datetime.datetime.now() - datetime.timedelta(days=365*2)),  # Explicitly use datetime.datetime
-                max_value=datetime.datetime.now() - datetime.timedelta(days=30)
-            )
-        
-        with col2:
-            end_date = st.date_input(
-                "End Date",
-                value=datetime.datetime.now(),
-                min_value=start_date + datetime.timedelta(days=30),
-                max_value=datetime.datetime.now()
-            )
+with col1:
+    start_date = st.date_input(
+        "Start Date",
+        value=(datetime.datetime.now() - datetime.timedelta(days=365*2)),  # Use datetime.datetime
+        max_value=datetime.datetime.now() - datetime.timedelta(days=30)
+    )
+
+with col2:
+    end_date = st.date_input(
+        "End Date",
+        value=datetime.datetime.now(),
+        min_value=start_date + datetime.timedelta(days=30),
+        max_value=datetime.datetime.now()
+    )
         if start_date >= end_date:
             st.sidebar.error("End date must be after start date.")
             return
