@@ -7,6 +7,7 @@ import plotly.express as px
 from datetime import datetime, timedelta
 
 # 1. Fetch Real-Time Stock Data with Improved Error Handling
+# Fixed get_stock_data function to handle Yahoo Finance data structure better
 def get_stock_data(tickers, start, end):
     try:
         data = yf.download(tickers, start=start, end=end)
@@ -15,11 +16,21 @@ def get_stock_data(tickers, start, end):
             st.error("No stock data found. Check the ticker symbols or date range.")
             return None, None
         
-        # Handle multi-level columns if multiple tickers
-        if isinstance(data.columns, pd.MultiIndex):
-            prices = data['Adj Close']
+        # Handle data structure based on number of tickers
+        if isinstance(tickers, list) and len(tickers) > 1:
+            # For multiple tickers, we get a multi-level column DataFrame
+            if 'Close' in data.columns.levels[0]:
+                prices = data['Close']
+            else:
+                st.error("Unable to find 'Close' price data in the downloaded dataset.")
+                return None, None
         else:
-            prices = data['Adj Close'] if 'Adj Close' in data.columns else data['Close']
+            # For a single ticker, we get a simple DataFrame
+            if 'Close' in data.columns:
+                prices = data['Close']
+            else:
+                st.error("Unable to find 'Close' price data in the downloaded dataset.")
+                return None, None
         
         # Calculate returns
         returns = prices.pct_change().dropna()
