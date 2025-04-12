@@ -520,6 +520,7 @@ def optimize_portfolio_with_ml(mu, sigma, prev_weights=None, risk_aversion=0.5,
 
 # Update the main function to include ML options
 def main_with_ml():
+    from datetime import datetime, timedelta  # Move import here
     st.set_page_config(
         page_title="ML-Enhanced Portfolio Optimizer",
         page_icon="📊",
@@ -556,16 +557,16 @@ def main_with_ml():
         with col1:
             start_date = st.date_input(
                 "Start Date",
-                value=(datetime.datetime.now() - datetime.timedelta(days=365*2)),
-                max_value=datetime.datetime.now() - datetime.timedelta(days=30)
+                value=(datetime.now() - timedelta(days=365*2)),
+                max_value=datetime.now() - timedelta(days=30)
             )
         
         with col2:
             end_date = st.date_input(
                 "End Date",
-                value=datetime.datetime.now(),
-                min_value=start_date + datetime.timedelta(days=30),
-                max_value=datetime.datetime.now()
+                value=datetime.now(),
+                min_value=start_date + timedelta(days=30),
+                max_value=datetime.now()
             )
         
         if start_date >= end_date:
