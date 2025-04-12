@@ -556,17 +556,16 @@ def main_with_ml():
         with col1:
             start_date = st.date_input(
                 "Start Date",
-                datetime.now() - timedelta(days=365*2),  # 2 years for better ML training
-                max_value=datetime.now() - timedelta(days=30)
+                value=(datetime.datetime.now() - datetime.timedelta(days=365*2)),  # Explicitly use datetime.datetime
+                max_value=datetime.datetime.now() - datetime.timedelta(days=30)
             )
         
         with col2:
             end_date = st.date_input(
                 "End Date",
-                datetime.now(),
-                min_value=start_date + timedelta(days=30),
-                max_value=datetime.now()
-            )
+                value=datetime.datetime.now(),
+                min_value=start_date + datetime.timedelta(days=30),
+                max_value=datetime.datetime.now()
         
         if start_date >= end_date:
             st.sidebar.error("End date must be after start date.")
