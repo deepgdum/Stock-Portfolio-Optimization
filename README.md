@@ -38,6 +38,8 @@ The dashboard empowers users to experiment with asset combinations, risk levels,
 - **Plotly** – Interactive plots
 
 ---
+<img width="1706" alt="Adaptivr Portfolio Optimization Dashboard" src="https://github.com/user-attachments/assets/01340854-0a55-47c8-b14c-fe33cf71c1f4" />
+
 
 ## ⚙️ How It Works – Function-by-Function Breakdown
 
